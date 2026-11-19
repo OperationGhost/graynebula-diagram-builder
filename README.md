@@ -1,37 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Graynebula Studio
 
-## Getting Started
+A free, browser-based diagram editor. No account is required: diagrams are saved
+automatically in the current browser's local IndexedDB storage.
 
-First, run the development server:
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to use the editor.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project structure
 
-## Learn More
+```text
+app/
+  globals.css                  Editor, canvas, and responsive workspace styles
+  layout.tsx                   Root layout and page metadata
+  page.tsx                     Home route and editor entry point
+src/
+  features/
+    editor/
+      components/
+        canvas.tsx             React Flow canvas and keyboard shortcuts
+        editor.tsx             Workspace orchestration and autosave
+        inspector.tsx          Selection properties and appearance
+        shape-library.tsx      Searchable, categorized shape sidebar
+        shape-node.tsx         Custom diagram node renderer
+        toolbar.tsx            Document actions, history, and export menu
+      model.ts                 Typed, versioned diagram document format
+      shape-catalog.ts         Shape definitions and categories
+      storage.ts               IndexedDB repository
+      store.ts                 Editor state and bounded undo history
+```
 
-To learn more about Next.js, take a look at the following resources:
+Keep related diagram-editor work in `src/features/editor`. The App Router
+provides the application shell; the interactive canvas and browser storage stay
+in the client-side editor feature.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Included editor features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Searchable, drag-and-drop shape library: General, Flowchart, UML, Database,
+  Network, and Architecture.
+- Pan and zoom, multi-selection, draggable shapes, and custom shape rendering.
+- Four connection points on every shape; connectors can start or end on any
+  side, and each shape can have multiple inbound or outbound connectors.
+- Corner resize handles for selected shapes, with inspector dimensions kept in
+  sync.
+- Shape labels, dimensions, fill, border, and text color in the inspector.
+- Multiple local documents, autosave status, and undo/redo.
+- Versioned JSON import and export, plus SVG and PNG image export.
 
-## Deploy on Vercel
+## Local-first data and privacy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Diagram content stays in the browser and is not sent to an application server.
+Automatic saving writes to IndexedDB in the current browser profile. Browser
+storage is not a folder on disk and does not sync to another browser or device;
+the browser or user can clear it. Export diagrams to keep a portable backup.
+Import validates the Graynebula JSON format and supported schema version.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# graynebula-diagram-builder
+## Main dependencies
+
+- Next.js, React, and TypeScript: application and user interface.
+- `@xyflow/react`: interactive node-and-edge canvas.
+- `dexie`: IndexedDB document storage.
+- `zustand`: editor state and history.
+- `zod`: imported diagram validation.
+- `lucide-react`: editor icons.
+- `html-to-image`: SVG and PNG export.
+
+## Extending the shape library
+
+Add a typed entry to `shapeDefinitions` in
+`src/features/editor/shape-catalog.ts`. To add a category, update
+`ShapeCategory` and `shapeCategories` in the same file. The sidebar uses these
+definitions for search, grouping, and previews; `ShapeNode` and
+`app/globals.css` control the corresponding canvas rendering. Imported
+documents are checked against the supported shape definitions.
