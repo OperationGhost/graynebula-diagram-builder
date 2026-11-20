@@ -23,6 +23,7 @@ interface EditorState {
   openDocument: (document: DiagramDocument) => void;
   setDocuments: (documents: DiagramDocument[]) => void;
   setNodes: (nodes: DiagramNode[]) => void;
+  setSelectedNodeId: (id: string | null) => void;
   setEdges: (edges: DiagramEdge[]) => void;
   setViewport: (viewport: DiagramViewport) => void;
   setTitle: (title: string) => void;
@@ -65,10 +66,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     }),
   setDocuments: (documents) => set({ documents }),
   setNodes: (nodes) =>
-    set({
+    set((state) => ({
       nodes,
-      selectedNodeId: nodes.find((node) => node.selected)?.id ?? null,
-    }),
+      selectedNodeId:
+        nodes.find((node) => node.selected)?.id ??
+        (state.selectedNodeId &&
+        nodes.some((node) => node.id === state.selectedNodeId)
+          ? state.selectedNodeId
+          : null),
+    })),
+  setSelectedNodeId: (selectedNodeId) => set({ selectedNodeId }),
   setEdges: (edges) => set({ edges }),
   setViewport: (viewport) => set({ viewport }),
   setTitle: (title) => set({ title }),

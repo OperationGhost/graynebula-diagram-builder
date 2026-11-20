@@ -23,6 +23,7 @@ import {
 } from "../model";
 import { useEditorStore } from "../store";
 import { getShapeDefinition } from "../shape-catalog";
+import { ShapeFormatToolbar } from "./shape-format-toolbar";
 import { ShapeNode } from "./shape-node";
 
 const nodeTypes = { diagramShape: ShapeNode };
@@ -34,10 +35,12 @@ export function DiagramCanvas() {
   >();
   const nodes = useEditorStore((state) => state.nodes);
   const edges = useEditorStore((state) => state.edges);
+  const selectedNodeId = useEditorStore((state) => state.selectedNodeId);
   const viewport = useEditorStore((state) => state.viewport);
   const setNodes = useEditorStore((state) => state.setNodes);
   const setEdges = useEditorStore((state) => state.setEdges);
   const setViewport = useEditorStore((state) => state.setViewport);
+  const selectedNode = nodes.find((node) => node.id === selectedNodeId);
 
   const onNodesChange = useCallback(
     (changes: NodeChangeset<DiagramNode>) => {
@@ -156,6 +159,12 @@ export function DiagramCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onSelectionChange={({ nodes: selectedNodes }) =>
+          useEditorStore
+            .getState()
+            .setSelectedNodeId(selectedNodes[0]?.id ?? null)
+        }
+        zIndexMode="manual"
         connectionMode={ConnectionMode.Loose}
         onNodeDragStart={() => useEditorStore.getState().commitHistory()}
         onMoveEnd={(_, nextViewport) => setViewport(nextViewport)}
@@ -188,6 +197,8 @@ export function DiagramCanvas() {
         />
         <Controls showInteractive={false} position="bottom-left" />
       </ReactFlow>
+
+      {selectedNode && <ShapeFormatToolbar node={selectedNode} />}
 
       <div className="canvas-zoom-controls" aria-label="Canvas zoom controls">
         <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => zoomOut()}>

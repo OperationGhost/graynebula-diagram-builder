@@ -302,19 +302,24 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   transition: box-shadow 120ms ease;
 }
 
-.diagram-node.is-selected { border-color: #7164df !important; box-shadow: 0 0 0 3px rgb(104 88 220 / 17%), 0 4px 10px rgb(43 39 85 / 9%); }
-.diagram-node__label { max-width: 100%; overflow-wrap: anywhere; color: inherit; font-size: 12px; font-weight: 550; line-height: 1.4; text-align: center; white-space: pre-wrap; }
+.diagram-node.is-selected { box-shadow: 0 0 0 3px color-mix(in srgb, var(--diagram-stroke) 18%, transparent), 0 4px 10px rgb(43 39 85 / 9%); }
+.diagram-node__label { width: 100%; max-width: 100%; overflow-wrap: anywhere; color: inherit; font-size: 12px; font-weight: 550; line-height: 1.4; text-align: center; white-space: pre-wrap; }
+.diagram-node__label--symbol { width: auto; }
+.diagram-node__editor { width: 100%; min-width: 0; height: auto; overflow: hidden; padding: 2px 3px; border: 0; border-radius: 3px; outline: none; background: transparent; color: inherit; font-size: 12px; font-weight: 550; line-height: 1.4; text-align: center; overflow-wrap: anywhere; resize: none; }
+.diagram-node .diagram-node__editor:focus-visible { outline: 0; outline-offset: 0; box-shadow: none; }
 .diagram-node--rounded { border-radius: 18px; }
 .diagram-node--ellipse, .diagram-node--terminator { border-radius: 50%; }
-.diagram-node--diamond, .diagram-node--decision { clip-path: polygon(50% 1%, 99% 50%, 50% 99%, 1% 50%); border-radius: 0; }
-.diagram-node--hexagon, .diagram-node--preparation { clip-path: polygon(25% 1%, 75% 1%, 100% 50%, 75% 99%, 25% 99%, 0 50%); border-radius: 0; }
-.diagram-node--parallelogram, .diagram-node--data { clip-path: polygon(17% 1%, 100% 1%, 83% 99%, 0 99%); border-radius: 0; }
-.diagram-node--arrow { clip-path: polygon(0 35%, 60% 35%, 60% 5%, 100% 50%, 60% 95%, 60% 65%, 0 65%); border-radius: 0; }
-.diagram-node--note { border-color: #dbb960 !important; border-radius: 3px 3px 13px 3px; background-color: #fff8df !important; transform: rotate(-1deg); }
+.diagram-node--diamond, .diagram-node--decision { clip-path: polygon(50% 2%, 98% 50%, 50% 98%, 2% 50%); border-radius: 0; }
+.diagram-node--hexagon, .diagram-node--preparation { clip-path: polygon(25% 2%, 75% 2%, 98% 50%, 75% 98%, 25% 98%, 2% 50%); border-radius: 0; }
+.diagram-node--octagon { clip-path: polygon(30% 2%, 70% 2%, 98% 30%, 98% 70%, 70% 98%, 30% 98%, 2% 70%, 2% 30%); border-radius: 0; }
+.diagram-node--parallelogram, .diagram-node--data { clip-path: polygon(19% 2%, 98% 2%, 81% 98%, 2% 98%); border-radius: 0; }
+.diagram-node--arrow { clip-path: polygon(2% 35%, 60% 35%, 60% 7%, 98% 50%, 60% 93%, 60% 65%, 2% 65%); border-radius: 0; }
+.diagram-node--note { border-radius: 3px 3px 13px 3px; transform: rotate(-1deg); }
 .diagram-node--document { border-radius: 4px 4px 25% 25% / 4px 4px 12% 12%; }
 .diagram-node--database { border-radius: 50% / 11%; }
 .diagram-node--cloud { border-radius: 50% 45% 43% 42%; }
 .diagram-node--container { border-style: dashed; }
+.diagram-node-outline { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 
 .diagram-node--database::before, .diagram-node--database::after,
 .diagram-node--table::before, .diagram-node--class::before,
@@ -322,8 +327,10 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   position: absolute;
   inset: auto 0;
   height: 1px;
-  background: currentColor;
-  opacity: .18;
+  background: transparent;
+  border-top: 1px solid;
+  border-color: inherit;
+  opacity: .35;
   content: "";
   pointer-events: none;
 }
@@ -332,13 +339,26 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .diagram-node--database::after { bottom: 21%; }
 .diagram-node--table::before, .diagram-node--class::before, .diagram-node--interface::before, .diagram-node--container::before { top: 35%; }
 .diagram-node--table, .diagram-node--class, .diagram-node--interface { border-radius: 5px; }
-.diagram-node--entity, .diagram-node--component { border-radius: 4px; box-shadow: 3px 3px 0 #e8e9f1, 0 1px 5px rgb(37 49 75 / 8%); }
+.diagram-node--entity, .diagram-node--component { border-radius: 4px; box-shadow: 3px 3px 0 var(--diagram-stroke), 0 1px 5px rgb(37 49 75 / 8%); }
 .diagram-node--actor, .diagram-node--router { border: 0; background: transparent !important; box-shadow: none; }
-.diagram-node--actor .diagram-node__label, .diagram-node--router .diagram-node__label { padding: 9px; border: 1px solid #8a83d0; border-radius: 50%; background: #fbfaff; }
-.diagram-handle { z-index: 3; width: 12px; height: 12px; border: 2px solid #fff; background: #7669dd; opacity: 0; box-shadow: 0 0 0 1px rgb(87 73 191 / 32%); transition: opacity 120ms ease, transform 120ms ease, background 120ms ease; }
-.diagram-node:hover .diagram-handle, .diagram-node.is-selected .diagram-handle, .diagram-handle.connecting, .diagram-handle.connectingfrom, .diagram-handle.connectingto { opacity: 1; }
-.diagram-handle:hover, .diagram-handle.valid { background: #4eaa83; transform: scale(1.2); }
-.diagram-resize-control { z-index: 4; width: 11px !important; height: 11px !important; border: 2px solid #fff !important; border-radius: 3px !important; background: #6858dc !important; box-shadow: 0 0 0 1px rgb(82 67 191 / 65%), 0 1px 4px rgb(27 24 57 / 25%); }
+.diagram-node--actor .diagram-node__label, .diagram-node--router .diagram-node__label { padding: 9px; border: 1px solid; border-radius: 50%; background: #fbfaff; }
+.diagram-handle { z-index: 3; width: 14px; height: 14px; border: 2px solid #fff; background: #5d4bd7; opacity: 0; visibility: hidden; box-shadow: 0 0 0 1px rgb(87 73 191 / 55%), 0 1px 3px rgb(27 24 57 / 25%); transition: opacity 120ms ease, background 120ms ease; }
+.diagram-node-container:hover .diagram-handle { opacity: 1; visibility: visible; }
+.diagram-handle:hover, .diagram-handle.valid { background: #4eaa83; }
+.shape-format-toolbar { position: absolute; top: 12px; left: 12px; z-index: 20; display: flex; width: max-content; max-width: calc(100% - 24px); align-items: center; gap: 6px; padding: 6px; overflow-x: auto; border: 1px solid #e6e8ef; border-radius: 9px; background: #fff; box-shadow: 0 6px 22px rgb(34 40 62 / 15%); scrollbar-width: none; }
+.shape-format-toolbar::-webkit-scrollbar { display: none; }
+.shape-format-group { display: flex; flex: 0 0 auto; align-items: center; gap: 3px; }
+.shape-format-color { display: inline-flex; width: 28px; height: 28px; align-items: center; justify-content: center; border: 1px solid #e8eaf0; border-radius: 6px; background: #fff; cursor: pointer; }
+.shape-format-color input { width: 22px; height: 22px; padding: 2px; border: 0; background: transparent; cursor: pointer; }
+.shape-format-select { height: 29px; padding: 0 6px; border: 1px solid #e7e9ef; border-radius: 6px; background: #fff; color: #505a6d; font-size: 10px; }
+.shape-format-select--family { width: 92px; }
+.shape-format-select--size { width: 54px; }
+.shape-format-button { display: inline-flex; width: 29px; height: 29px; flex: 0 0 29px; align-items: center; justify-content: center; padding: 0; border: 1px solid transparent; border-radius: 6px; background: transparent; color: #626c7e; cursor: pointer; }
+.shape-format-button:hover { border-color: #e8e6f4; background: #f7f6fc; color: #5345c7; }
+.shape-format-button[aria-pressed="true"] { border-color: #ded9fa; background: #f1efff; color: #5345c7; }
+.shape-format-button--danger:hover { border-color: #f4dddd; background: #fff4f4; color: #c64646; }
+.shape-format-separator { width: 1px; height: 22px; flex: 0 0 1px; background: #eceef3; }
+.diagram-resize-control { z-index: 4; width: 16px !important; height: 16px !important; border: 2px solid #fff !important; border-radius: 4px !important; background: #6858dc !important; box-shadow: 0 0 0 1px rgb(82 67 191 / 65%), 0 1px 4px rgb(27 24 57 / 25%); }
 .react-flow__edge-path { stroke: #8490a6; stroke-width: 1.8px; }
 .react-flow__edge.selected .react-flow__edge-path { stroke: #7164df; }
 .react-flow__connection-path { stroke: #8174e2; stroke-width: 2; }
@@ -451,6 +471,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
   .shape-tile { min-height: 55px; }
   .library-hint { min-height: 49px; gap: 6px; padding: 7px; font-size: 9px; }
   .canvas-toolbar { min-height: 37px; padding: 0 10px; }
+  .shape-format-toolbar { top: 7px; left: 6px; max-width: calc(100% - 12px); gap: 3px; padding: 4px; }
   .canvas-breadcrumb { gap: 6px; font-size: 9px; }
   .canvas-breadcrumb strong { max-width: 130px; }
   .canvas-add-helper { top: 9px; right: 8px; height: 27px; padding: 0 7px; font-size: 9px; }

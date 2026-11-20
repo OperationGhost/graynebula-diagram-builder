@@ -11,6 +11,11 @@ export interface DiagramNodeData extends Record<string, unknown> {
   fill: string;
   stroke: string;
   color: string;
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: "normal" | "bold";
+  fontStyle?: "normal" | "italic";
+  textAlign?: "left" | "center" | "right";
 }
 
 export type DiagramNode = Node<DiagramNodeData, "diagramShape">;
@@ -44,6 +49,7 @@ const nodeSchema = z
     id: z.string().min(1),
     type: z.string().optional(),
     position: pointSchema,
+    zIndex: z.number().optional(),
     data: z
       .object({
         shapeId: z.string().min(1),
@@ -51,6 +57,11 @@ const nodeSchema = z
         fill: z.string().regex(/^#[\da-f]{6}$/i),
         stroke: z.string().regex(/^#[\da-f]{6}$/i),
         color: z.string().regex(/^#[\da-f]{6}$/i),
+        fontFamily: z.string().max(100).optional(),
+        fontSize: z.number().int().min(8).max(64).optional(),
+        fontWeight: z.enum(["normal", "bold"]).optional(),
+        fontStyle: z.enum(["normal", "italic"]).optional(),
+        textAlign: z.enum(["left", "center", "right"]).optional(),
       })
       .passthrough(),
   })
@@ -142,6 +153,14 @@ export function createDiagramNode(
   position: { x: number; y: number },
   size: { width: number; height: number },
 ): DiagramNode {
+  const fill = shapeId === "note" ? "#fff8df" : "#ffffff";
+  const stroke =
+    shapeId === "note"
+      ? "#dbb960"
+      : shapeId === "actor" || shapeId === "router"
+        ? "#8a83d0"
+        : "#64748b";
+
   return {
     id: crypto.randomUUID(),
     type: "diagramShape",
@@ -150,8 +169,8 @@ export function createDiagramNode(
     data: {
       shapeId,
       label,
-      fill: "#ffffff",
-      stroke: "#64748b",
+      fill,
+      stroke,
       color: "#172033",
     },
   };

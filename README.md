@@ -47,12 +47,20 @@ in the client-side editor feature.
 ## Included editor features
 
 - Searchable, drag-and-drop shape library: General, Flowchart, UML, Database,
-  Network, and Architecture.
+  Network, and Architecture, including an octagon.
 - Pan and zoom, multi-selection, draggable shapes, and custom shape rendering.
-- Four connection points on every shape; connectors can start or end on any
-  side, and each shape can have multiple inbound or outbound connectors.
-- Corner resize handles for selected shapes, with inspector dimensions kept in
-  sync.
+- Four connection points appear only while hovering over a shape, including
+  clipped shapes such as decisions and hexagons; each point supports multiple
+  connectors.
+- Polygonal shape outlines, including the octagon and Input/Output shapes,
+  follow the selected border color.
+- Select a shape and drag a border or corner to resize it; the border resize
+  cursor appears on hover, and the inspector dimensions stay in sync.
+- Double-click a shape to edit its label inline; the editor expands to show all
+  text without scrolling. Enter saves, Shift+Enter adds a line, and Escape
+  cancels.
+- Selecting a shape opens a canvas formatting toolbar for fill, border and
+  text colors, fonts, alignment, layer order, duplication, and deletion.
 - Shape labels, dimensions, fill, border, and text color in the inspector.
 - Multiple local documents, autosave status, and undo/redo.
 - Versioned JSON import and export, plus SVG and PNG image export.
