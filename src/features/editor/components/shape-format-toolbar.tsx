@@ -124,11 +124,11 @@ export function ShapeFormatToolbar({ node }: ShapeFormatToolbarProps) {
       aria-label="Selected shape formatting"
     >
       <div className="shape-format-group" role="group" aria-label="Shape colors">
-        <label className="shape-format-color" title="Fill color">
-          <span className="visually-hidden">Fill color</span>
+        <label className="shape-format-color" title="Fill shape">
+          <span className="visually-hidden">Fill shape</span>
           <input
             type="color"
-            aria-label="Fill color"
+            aria-label="Fill shape"
             value={node.data.fill}
             onFocus={() => useEditorStore.getState().commitHistory()}
             onChange={(event) =>

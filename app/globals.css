@@ -402,7 +402,7 @@ button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus
 .diagram-node--table, .diagram-node--class, .diagram-node--interface { border-radius: 5px; }
 .diagram-node--entity, .diagram-node--component { border-radius: 4px; box-shadow: 3px 3px 0 var(--diagram-stroke), 0 1px 5px rgb(37 49 75 / 8%); }
 .diagram-node--actor, .diagram-node--router { border: 0; background: transparent !important; box-shadow: none; }
-.diagram-node--actor .diagram-node__label, .diagram-node--router .diagram-node__label { padding: 9px; border: 1px solid; border-radius: 50%; background: #fbfaff; }
+.diagram-node--actor .diagram-node__label, .diagram-node--router .diagram-node__label { padding: 9px; border: 1px solid; border-radius: 50%; }
 .diagram-handle { z-index: 3; width: 14px; height: 14px; border: 2px solid #fff; background: #5d4bd7; opacity: 0; visibility: hidden; box-shadow: 0 0 0 1px rgb(87 73 191 / 55%), 0 1px 3px rgb(27 24 57 / 25%); transition: opacity 120ms ease, background 120ms ease; }
 .diagram-node-container:hover .diagram-handle { opacity: 1; visibility: visible; }
 .diagram-handle:hover, .diagram-handle.valid { background: #4eaa83; }

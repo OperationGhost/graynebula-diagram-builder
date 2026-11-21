@@ -234,6 +234,7 @@ export function ShapeNode({ id, data, selected }: NodeProps<DiagramNode>) {
             style={{
               ...textStyle,
               borderColor: hasCircularLabel ? data.stroke : undefined,
+              backgroundColor: hasCircularLabel ? data.fill : undefined,
             }}
           >
             {data.label || shape.label}
