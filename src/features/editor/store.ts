@@ -14,6 +14,7 @@ interface EditorState {
   viewport: DiagramViewport;
   documents: DiagramDocument[];
   selectedNodeId: string | null;
+  selectedEdgeId: string | null;
   initialized: boolean;
   initializationError: string | null;
   saveState: "loading" | "saved" | "saving" | "error";
@@ -24,6 +25,7 @@ interface EditorState {
   setDocuments: (documents: DiagramDocument[]) => void;
   setNodes: (nodes: DiagramNode[]) => void;
   setSelectedNodeId: (id: string | null) => void;
+  setSelectedEdgeId: (id: string | null) => void;
   setEdges: (edges: DiagramEdge[]) => void;
   setViewport: (viewport: DiagramViewport) => void;
   setTitle: (title: string) => void;
@@ -44,6 +46,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   viewport: { x: 0, y: 0, zoom: 1 },
   documents: [],
   selectedNodeId: null,
+  selectedEdgeId: null,
   initialized: false,
   initializationError: null,
   saveState: "loading",
@@ -58,6 +61,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       edges: document.edges,
       viewport: document.viewport,
       selectedNodeId: null,
+      selectedEdgeId: null,
       past: [],
       future: [],
       initialized: true,
@@ -76,6 +80,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
           : null),
     })),
   setSelectedNodeId: (selectedNodeId) => set({ selectedNodeId }),
+  setSelectedEdgeId: (selectedEdgeId) => set({ selectedEdgeId }),
   setEdges: (edges) => set({ edges }),
   setViewport: (viewport) => set({ viewport }),
   setTitle: (title) => set({ title }),

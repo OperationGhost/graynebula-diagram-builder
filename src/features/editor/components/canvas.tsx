@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   addEdge,
   Background,
@@ -23,12 +23,21 @@ import {
 } from "../model";
 import { useEditorStore } from "../store";
 import { getShapeDefinition } from "../shape-catalog";
+import { EditableEdge } from "./editable-edge";
+import { EdgeFormatToolbar } from "./edge-format-toolbar";
 import { ShapeFormatToolbar } from "./shape-format-toolbar";
 import { ShapeNode } from "./shape-node";
 
 const nodeTypes = { diagramShape: ShapeNode };
+const edgeTypes = { smoothstep: EditableEdge };
 
 export function DiagramCanvas() {
+  const [theme, setTheme] = useState<"dark" | "light">(
+    typeof document !== "undefined" &&
+      document.documentElement.dataset.theme === "light"
+      ? "light"
+      : "dark",
+  );
   const { screenToFlowPosition, fitView, zoomIn, zoomOut } = useReactFlow<
     DiagramNode,
     DiagramEdge
@@ -36,11 +45,24 @@ export function DiagramCanvas() {
   const nodes = useEditorStore((state) => state.nodes);
   const edges = useEditorStore((state) => state.edges);
   const selectedNodeId = useEditorStore((state) => state.selectedNodeId);
+  const selectedEdgeId = useEditorStore((state) => state.selectedEdgeId);
   const viewport = useEditorStore((state) => state.viewport);
   const setNodes = useEditorStore((state) => state.setNodes);
   const setEdges = useEditorStore((state) => state.setEdges);
   const setViewport = useEditorStore((state) => state.setViewport);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+  const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
+
+  useEffect(() => {
+    const syncTheme = () => {
+      setTheme(
+        document.documentElement.dataset.theme === "light" ? "light" : "dark",
+      );
+    };
+    window.addEventListener("graynebula-theme-change", syncTheme);
+    return () =>
+      window.removeEventListener("graynebula-theme-change", syncTheme);
+  }, []);
 
   const onNodesChange = useCallback(
     (changes: NodeChangeset<DiagramNode>) => {
@@ -65,6 +87,12 @@ export function DiagramCanvas() {
           {
             ...connection,
             type: "smoothstep",
+            data: {
+              stroke: "#78849a",
+              strokeWidth: 1.8,
+              lineStyle: "solid",
+              direction: "end",
+            },
             markerEnd: { type: MarkerType.ArrowClosed, color: "#78849a" },
             style: { stroke: "#78849a", strokeWidth: 1.8 },
           },
@@ -124,9 +152,10 @@ export function DiagramCanvas() {
 
       const isMac = navigator.platform.toLowerCase().includes("mac");
       const modifierPressed = isMac ? event.metaKey : event.ctrlKey;
-      if (modifierPressed && event.key.toLowerCase() === "z") {
+      const key = event.key.toLowerCase();
+      if (modifierPressed && (key === "z" || key === "y")) {
         event.preventDefault();
-        if (event.shiftKey) useEditorStore.getState().redo();
+        if (key === "y" || event.shiftKey) useEditorStore.getState().redo();
         else useEditorStore.getState().undo();
         return;
       }
@@ -156,14 +185,15 @@ export function DiagramCanvas() {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
-        onSelectionChange={({ nodes: selectedNodes }) =>
-          useEditorStore
-            .getState()
-            .setSelectedNodeId(selectedNodes[0]?.id ?? null)
-        }
+        onSelectionChange={({ nodes: selectedNodes, edges: selectedEdges }) => {
+          const state = useEditorStore.getState();
+          state.setSelectedNodeId(selectedNodes[0]?.id ?? null);
+          state.setSelectedEdgeId(selectedEdges[0]?.id ?? null);
+        }}
         zIndexMode="manual"
         connectionMode={ConnectionMode.Loose}
         onNodeDragStart={() => useEditorStore.getState().commitHistory()}
@@ -175,6 +205,7 @@ export function DiagramCanvas() {
           style: { stroke: "#78849a", strokeWidth: 1.8 },
         }}
         deleteKeyCode={null}
+        proOptions={{ hideAttribution: true }}
         fitViewOptions={{ padding: 0.18 }}
         minZoom={0.15}
         maxZoom={2.5}
@@ -190,7 +221,7 @@ export function DiagramCanvas() {
         aria-label="Diagram canvas"
       >
         <Background
-          color="#dce2ec"
+          color={theme === "light" ? "#000000" : "#ffffff"}
           gap={22}
           size={1.2}
           variant={BackgroundVariant.Dots}
@@ -199,6 +230,7 @@ export function DiagramCanvas() {
       </ReactFlow>
 
       {selectedNode && <ShapeFormatToolbar node={selectedNode} />}
+      {selectedEdge && <EdgeFormatToolbar edge={selectedEdge} />}
 
       <div className="canvas-zoom-controls" aria-label="Canvas zoom controls">
         <button type="button" aria-label="Zoom out" title="Zoom out" onClick={() => zoomOut()}>

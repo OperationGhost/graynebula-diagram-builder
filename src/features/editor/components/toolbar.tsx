@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Check,
   ChevronDown,
@@ -9,9 +10,12 @@ import {
   FileUp,
   FolderOpen,
   LoaderCircle,
+  Moon,
   Plus,
   Redo2,
   Shapes,
+  Trash2,
+  Sun,
   Undo2,
 } from "lucide-react";
 import { useEditorStore } from "../store";
@@ -19,6 +23,7 @@ import { useEditorStore } from "../store";
 interface ToolbarProps {
   onNewDocument: () => void;
   onOpenDocument: (id: string) => void;
+  onDeleteDocument: (id: string) => void;
   onImport: (file: File) => void;
   onExportJson: () => void;
   onExportSvg: () => void;
@@ -28,12 +33,14 @@ interface ToolbarProps {
 export function Toolbar({
   onNewDocument,
   onOpenDocument,
+  onDeleteDocument,
   onImport,
   onExportJson,
   onExportSvg,
   onExportPng,
 }: ToolbarProps) {
   const fileInput = useRef<HTMLInputElement>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const title = useEditorStore((state) => state.title);
   const setTitle = useEditorStore((state) => state.setTitle);
   const documentId = useEditorStore((state) => state.documentId);
@@ -44,6 +51,24 @@ export function Toolbar({
   const canUndo = useEditorStore((state) => state.past.length > 0);
   const canRedo = useEditorStore((state) => state.future.length > 0);
 
+  useEffect(() => {
+    const savedTheme =
+      window.localStorage.getItem("graynebula-theme") === "light"
+        ? "light"
+        : "dark";
+    document.documentElement.dataset.theme = savedTheme;
+    const frame = window.requestAnimationFrame(() => setTheme(savedTheme));
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  function toggleTheme() {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    document.documentElement.dataset.theme = nextTheme;
+    window.localStorage.setItem("graynebula-theme", nextTheme);
+    window.dispatchEvent(new Event("graynebula-theme-change"));
+  }
+
   const saveLabel = {
     loading: "Loading",
     saving: "Saving",
@@ -53,12 +78,21 @@ export function Toolbar({
 
   return (
     <header className="editor-header">
-      <Link className="brand" href="/" aria-label="Graynebula home">
+      <Link className="brand" href="/" aria-label="Graynebula Diagram home">
         <span className="brand-mark">
-          <Shapes size={19} strokeWidth={2.2} />
+          <Image
+            className="brand-mark__image"
+            src="/graynebula-logo.png"
+            alt=""
+            width={48}
+            height={32}
+            sizes="28px"
+          />
         </span>
-        <span>graynebula</span>
-        <span className="brand-edition">studio</span>
+        <span className="brand-name">
+          <span className="brand-name__primary">Graynebula</span>
+          <span className="brand-name__secondary">Diagram</span>
+        </span>
       </Link>
 
       <div className="header-divider" />
@@ -98,7 +132,7 @@ export function Toolbar({
             className="icon-button"
             type="button"
             aria-label="Redo"
-            title="Redo (Ctrl+Shift+Z)"
+            title="Redo (Ctrl+Y or Ctrl+Shift+Z)"
             disabled={!canRedo}
             onClick={redo}
           >
@@ -121,20 +155,33 @@ export function Toolbar({
             <div className="menu-separator" />
             {documents.length > 0 ? (
               documents.map((document) => (
-                <button
+                <div
                   className={`document-option${document.id === documentId ? " is-current" : ""}`}
                   key={document.id}
-                  type="button"
-                  onClick={() => onOpenDocument(document.id)}
                 >
-                  <span className="document-option__icon">
-                    <Shapes size={15} />
-                  </span>
-                  <span className="document-option__text">
-                    <strong>{document.title}</strong>
-                    <small>{new Date(document.updatedAt).toLocaleDateString()}</small>
-                  </span>
-                </button>
+                  <button
+                    className="document-option__open"
+                    type="button"
+                    onClick={() => onOpenDocument(document.id)}
+                  >
+                    <span className="document-option__icon">
+                      <Shapes size={15} />
+                    </span>
+                    <span className="document-option__text">
+                      <strong>{document.title}</strong>
+                      <small>{new Date(document.updatedAt).toLocaleDateString()}</small>
+                    </span>
+                  </button>
+                  <button
+                    className="document-option__delete"
+                    type="button"
+                    aria-label={`Delete ${document.title}`}
+                    title={`Delete ${document.title}`}
+                    onClick={() => onDeleteDocument(document.id)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               ))
             ) : (
               <p className="menu-empty">Your saved diagrams will appear here.</p>
@@ -162,6 +209,16 @@ export function Toolbar({
             event.target.value = "";
           }}
         />
+
+        <button
+          className="theme-toggle"
+          type="button"
+          aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          title={theme === "dark" ? "Light theme" : "Dark theme"}
+          onClick={toggleTheme}
+        >
+          {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
 
         <details className="action-menu">
           <summary className="primary-button">

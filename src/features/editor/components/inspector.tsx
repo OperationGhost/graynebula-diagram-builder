@@ -1,13 +1,19 @@
 "use client";
 
+import { MarkerType } from "@xyflow/react";
 import { useEditorStore } from "../store";
+import type { DiagramEdge } from "../model";
 
 export function Inspector() {
   const nodes = useEditorStore((state) => state.nodes);
   const selectedNodeId = useEditorStore((state) => state.selectedNodeId);
+  const selectedEdgeId = useEditorStore((state) => state.selectedEdgeId);
+  const edges = useEditorStore((state) => state.edges);
   const setNodes = useEditorStore((state) => state.setNodes);
+  const setEdges = useEditorStore((state) => state.setEdges);
   const commitHistory = useEditorStore((state) => state.commitHistory);
   const selectedNode = nodes.find((node) => node.id === selectedNodeId);
+  const selectedEdge = edges.find((edge) => edge.id === selectedEdgeId);
 
   function updateSelectedNode(
     updater: (node: (typeof nodes)[number]) => (typeof nodes)[number],
@@ -21,7 +27,7 @@ export function Inspector() {
       <div className="panel-heading">
         <div>
           <p className="eyebrow">CANVAS DETAILS</p>
-          <h2>{selectedNode ? "Properties" : "Inspector"}</h2>
+          <h2>{selectedNode || selectedEdge ? "Properties" : "Inspector"}</h2>
         </div>
       </div>
 
@@ -157,6 +163,106 @@ export function Inspector() {
             <span>Shape type</span>
             <strong>{selectedNode.data.shapeId.replaceAll("-", " ")}</strong>
           </div>
+        </div>
+      ) : selectedEdge ? (
+        <div className="inspector-fields">
+          <p className="section-label">CONNECTOR</p>
+          {(() => {
+            const edge = selectedEdge;
+            if (!edge) return null;
+            const data = edge.data ?? {};
+            const stroke = data.stroke ?? "#78849a";
+            const strokeWidth = data.strokeWidth ?? 1.8;
+            const lineStyle = data.lineStyle ?? "solid";
+            const direction = data.direction ?? "end";
+
+            function updateEdge(updater: (edge: DiagramEdge) => DiagramEdge) {
+              commitHistory();
+              setEdges(edges.map((item) => (item.id === edge.id ? updater(item) : item)));
+            }
+
+            return (
+              <>
+                <label className="color-field">
+                  <span>Line</span>
+                  <input
+                    aria-label="Connector line color"
+                    type="color"
+                    value={stroke}
+                    onFocus={commitHistory}
+                    onChange={(event) => {
+                      const color = event.target.value;
+                      updateEdge((edge) => ({
+                        ...edge,
+                        data: { ...edge.data, stroke: color },
+                        style: { ...edge.style, stroke: color },
+                      }));
+                    }}
+                  />
+                  <code>{stroke.toUpperCase()}</code>
+                </label>
+                <label className="field">
+                  <span>Width</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    step={0.5}
+                    value={strokeWidth}
+                    onFocus={commitHistory}
+                    onChange={(event) => {
+                      const width = Math.min(12, Math.max(1, Number(event.target.value) || 1));
+                      updateEdge((edge) => ({
+                        ...edge,
+                        data: { ...edge.data, strokeWidth: width },
+                        style: { ...edge.style, strokeWidth: width },
+                      }));
+                    }}
+                  />
+                </label>
+                <label className="field">
+                  <span>Line style</span>
+                  <select
+                    value={lineStyle}
+                    onChange={(event) => {
+                      const nextStyle = event.target.value as "solid" | "dashed" | "dotted";
+                      const dashArray = nextStyle === "dashed" ? "10 7" : nextStyle === "dotted" ? "2 5" : undefined;
+                      updateEdge((edge) => ({
+                        ...edge,
+                        data: { ...edge.data, lineStyle: nextStyle },
+                        style: { ...edge.style, strokeDasharray: dashArray },
+                      }));
+                    }}
+                  >
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Direction</span>
+                  <select
+                    value={direction}
+                    onChange={(event) => {
+                      const nextDirection = event.target.value as "none" | "start" | "end" | "both";
+                      const marker = { type: MarkerType.ArrowClosed, color: stroke };
+                      updateEdge((edge) => ({
+                        ...edge,
+                        data: { ...edge.data, direction: nextDirection },
+                        markerStart: nextDirection === "start" || nextDirection === "both" ? marker : undefined,
+                        markerEnd: nextDirection === "end" || nextDirection === "both" ? marker : undefined,
+                      }));
+                    }}
+                  >
+                    <option value="none">No arrows</option>
+                    <option value="start">Start arrow</option>
+                    <option value="end">End arrow</option>
+                    <option value="both">Both arrows</option>
+                  </select>
+                </label>
+              </>
+            );
+          })()}
         </div>
       ) : (
         <div className="inspector-empty">

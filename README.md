@@ -30,8 +30,7 @@ src/
       components/
         canvas.tsx             React Flow canvas and keyboard shortcuts
         editor.tsx             Workspace orchestration and autosave
-        inspector.tsx          Selection properties and appearance
-        shape-library.tsx      Searchable, categorized shape sidebar
+        shape-library.tsx      Floating, collapsible categorized shape library
         shape-node.tsx         Custom diagram node renderer
         toolbar.tsx            Document actions, history, and export menu
       model.ts                 Typed, versioned diagram document format
@@ -48,20 +47,26 @@ in the client-side editor feature.
 
 - Searchable, drag-and-drop shape library: General, Flowchart, UML, Database,
   Network, and Architecture, including an octagon.
+- The shape library smoothly slides open and closed over the canvas to maximize
+  the workspace; there is no right properties sidebar.
+- Document controls use a compact floating navbar, leaving the canvas visible
+  beneath it.
 - Pan and zoom, multi-selection, draggable shapes, and custom shape rendering.
 - Four connection points appear only while hovering over a shape, including
   clipped shapes such as decisions and hexagons; each point supports multiple
   connectors.
+- Selecting a connector highlights its path with a brighter, thicker stroke.
+- Select a connector to drag its route control or add and move bend points;
+  connector routes are saved with the diagram and included in undo/redo.
 - Polygonal shape outlines, including the octagon and Input/Output shapes,
   follow the selected border color.
 - Select a shape and drag a border or corner to resize it; the border resize
-  cursor appears on hover, and the inspector dimensions stay in sync.
+  cursor appears on hover.
 - Double-click a shape to edit its label inline; the editor expands to show all
   text without scrolling. Enter saves, Shift+Enter adds a line, and Escape
   cancels.
 - Selecting a shape opens a canvas formatting toolbar for fill, border and
   text colors, fonts, alignment, layer order, duplication, and deletion.
-- Shape labels, dimensions, fill, border, and text color in the inspector.
 - Multiple local documents, autosave status, and undo/redo.
 - Versioned JSON import and export, plus SVG and PNG image export.
 

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { ReactFlowProvider, useReactFlow } from "@xyflow/react";
 import { toPng, toSvg } from "html-to-image";
-import { Inspector } from "./inspector";
 import { ShapeLibrary } from "./shape-library";
 import { DiagramCanvas } from "./canvas";
 import { Toolbar } from "./toolbar";
@@ -18,7 +17,7 @@ import {
   type DiagramEdge,
   type DiagramNode,
 } from "../model";
-import { listDiagrams, saveDiagram } from "../storage";
+import { deleteDiagram, listDiagrams, saveDiagram } from "../storage";
 import { useEditorStore } from "../store";
 import type { ShapeDefinition } from "../shape-catalog";
 
@@ -167,6 +166,37 @@ function EditorWorkspace() {
     [openDocument, setNotice],
   );
 
+  const handleDeleteDocument = useCallback(
+    async (id: string) => {
+      const document = useEditorStore
+        .getState()
+        .documents.find((item) => item.id === id);
+      if (!document) return;
+      if (!window.confirm(`Delete "${document.title}"?`)) return;
+
+      try {
+        await deleteDiagram(id);
+        const remaining = await listDiagrams();
+
+        if (useEditorStore.getState().documentId === id) {
+          if (remaining.length > 0) {
+            openDocument(remaining[0]);
+          } else {
+            const blankDocument = await saveDiagram(createBlankDocument());
+            openDocument(blankDocument);
+            remaining.push(blankDocument);
+          }
+        }
+
+        setDocuments(remaining);
+        setNotice(`Deleted "${document.title}".`);
+      } catch (error) {
+        setNotice(`Could not delete diagram: ${messageFromError(error)}`);
+      }
+    },
+    [openDocument, setDocuments, setNotice],
+  );
+
   const handleImport = useCallback(
     async (file: File) => {
       try {
@@ -226,7 +256,14 @@ function EditorWorkspace() {
       }
 
       try {
-        const options = { backgroundColor: "#f6f8fc", pixelRatio: 2 };
+        const isLightTheme =
+          document.documentElement.dataset.theme === "light";
+        const options = {
+          backgroundColor: isLightTheme ? "#ffffff" : "#000000",
+          pixelRatio: 2,
+          filter: (element: HTMLElement) =>
+            !element.classList?.contains("react-flow__background"),
+        };
         const url =
           format === "svg"
             ? await toSvg(target, options)
@@ -301,6 +338,7 @@ function EditorWorkspace() {
       <Toolbar
         onNewDocument={() => void handleNewDocument()}
         onOpenDocument={(id) => void handleOpenDocument(id)}
+        onDeleteDocument={(id) => void handleDeleteDocument(id)}
         onImport={(file) => void handleImport(file)}
         onExportJson={handleExportJson}
         onExportSvg={() => void exportImage("svg")}
@@ -309,23 +347,8 @@ function EditorWorkspace() {
       <div className="editor-workspace">
         <ShapeLibrary onAddShape={handleAddShape} />
         <section className="canvas-column" aria-label="Diagram workspace">
-          <div className="canvas-toolbar">
-            <div className="canvas-breadcrumb">
-              <span>Workspace</span>
-              <span className="breadcrumb-chevron">/</span>
-              <strong>{title || "Untitled diagram"}</strong>
-            </div>
-            <div className="canvas-toolbar__right">
-              <span className="privacy-badge">
-                <span className="privacy-dot" />
-                Saved locally
-              </span>
-              <span className="canvas-shortcut">⌘ / Ctrl + Z to undo</span>
-            </div>
-          </div>
           <DiagramCanvas />
         </section>
-        <Inspector />
       </div>
       {notice && (
         <div className="toast-notice" role="status">
@@ -335,7 +358,7 @@ function EditorWorkspace() {
       )}
       <footer className="editor-footer">
         <span>Private by design · Your diagrams stay in this browser</span>
-        <span>Graynebula Studio · Free forever</span>
+        <span>Graynebula Diagram · Free forever</span>
       </footer>
     </main>
   );

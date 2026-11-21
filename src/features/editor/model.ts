@@ -18,8 +18,23 @@ export interface DiagramNodeData extends Record<string, unknown> {
   textAlign?: "left" | "center" | "right";
 }
 
+export interface DiagramWaypoint {
+  x: number;
+  y: number;
+}
+
+export interface DiagramEdgeData extends Record<string, unknown> {
+  waypoints?: DiagramWaypoint[];
+  centerX?: number;
+  centerY?: number;
+  stroke?: string;
+  strokeWidth?: number;
+  lineStyle?: "solid" | "dashed" | "dotted";
+  direction?: "none" | "start" | "end" | "both";
+}
+
 export type DiagramNode = Node<DiagramNodeData, "diagramShape">;
-export type DiagramEdge = Edge<Record<string, unknown>>;
+export type DiagramEdge = Edge<DiagramEdgeData, "smoothstep">;
 
 export interface DiagramViewport {
   x: number;
@@ -72,6 +87,18 @@ const edgeSchema = z
     id: z.string().min(1),
     source: z.string().min(1),
     target: z.string().min(1),
+    data: z
+      .object({
+        waypoints: z.array(pointSchema).optional(),
+        centerX: z.number().optional(),
+        centerY: z.number().optional(),
+        stroke: z.string().regex(/^#[\da-f]{6}$/i).optional(),
+        strokeWidth: z.number().min(1).max(12).optional(),
+        lineStyle: z.enum(["solid", "dashed", "dotted"]).optional(),
+        direction: z.enum(["none", "start", "end", "both"]).optional(),
+      })
+      .passthrough()
+      .optional(),
   })
   .passthrough();
 
